@@ -5,7 +5,7 @@ products:
     type: Text
     children:
         title:
-            css: 'h2 a.a-link-normal.a-text-normal'
+            css: 'div.s-title-instructions-style a h2'
             xpath: null
             type: Text
         url:
@@ -24,5 +24,9 @@ products:
             attribute: aria-label
         price:
             css: 'span.a-price:nth-of-type(1) span.a-offscreen'
+            xpath: null
+            type: Text
+        sponsored:
+            css: 'div.s-title-instructions-style span.puis-label-popover-default'
             xpath: null
             type: Text

@@ -1,6 +1,7 @@
 from selectorlib import Extractor
 import requests 
 import json 
+import os
 from time import sleep
 
 
@@ -33,17 +34,53 @@ def scrape(url):
             print("Page %s must have been blocked by Amazon as the status code was %d"%(url,r.status_code))
         return None
     # Pass the HTML of the page and create 
-    return e.extract(r.text)
+    data = e.extract(r.text)
+    if data and 'products' in data:
+        for product in data['products']:
+            product['sponsored'] = product.get('sponsored') == 'Sponsored'
+    return data
 
-# product_data = []
-with open("search_results_urls.txt",'r') as urllist, open('search_results_output.jsonl','w') as outfile:
-    for url in urllist.read().splitlines():
-        data = scrape(url) 
-        if data:
-            for product in data['products']:
-                product['search_url'] = url
+# Function to get search results from a URL
+def get_search_results(url=None):
+    """
+    Scrapes Amazon search results from a specific URL or from search_results_urls.txt
+    
+    Args:
+        url (str, optional): Amazon search URL. If None, reads from search_results_urls.txt
+        
+    Returns:
+        list: List of product dictionaries from search results
+    """
+    if url is None:
+        # Read the URL from file if not provided
+        with open("search_results_urls.txt", 'r') as urlfile:
+            url = urlfile.read().strip()
+    
+    # Scrape the URL
+    data = scrape(url)
+    
+    products = []
+    if data and 'products' in data:
+        for product in data['products']:
+            product['sponsored'] = product.get('sponsored') == 'Sponsored'
+            product['search_url'] = url
+            products.append(product)
+    
+    return products
+
+# This code runs when the script is executed directly
+if __name__ == "__main__":
+    # Create output directory if it doesn't exist
+    output_dir = 'output'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # product_data = []
+    with open("search_results_urls.txt",'r') as urllist, open(os.path.join(output_dir, 'search_results_output.jsonl'),'w') as outfile:
+        for url in urllist.read().splitlines():
+            products = get_search_results(url)
+            for product in products:
                 print("Saving Product: %s"%product['title'])
                 json.dump(product,outfile)
                 outfile.write("\n")
                 # sleep(5)
-    

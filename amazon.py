@@ -1,6 +1,7 @@
 from selectorlib import Extractor
 import requests 
 import json 
+import os
 from time import sleep
 
 
@@ -35,12 +36,16 @@ def scrape(url):
     # Pass the HTML of the page and create 
     return e.extract(r.text)
 
+# Create output directory if it doesn't exist
+output_dir = 'output'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
 # product_data = []
-with open("urls.txt",'r') as urllist, open('output.jsonl','w') as outfile:
+with open("urls.txt",'r') as urllist, open(os.path.join(output_dir, 'output.jsonl'),'w') as outfile:
     for url in urllist.read().splitlines():
         data = scrape(url) 
         if data:
             json.dump(data,outfile)
             outfile.write("\n")
             # sleep(5)
-    
